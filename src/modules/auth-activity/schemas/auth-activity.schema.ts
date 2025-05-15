@@ -10,9 +10,6 @@ export class User {
 
   @Prop({ required: true })
   name: string;
-
-  @Prop({ required: true })
-  userType: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -27,15 +24,6 @@ export class AuthActivity {
 
   @Prop({ required: true })
   ip: string;
-
-  @Prop({ required: false })
-  lat: number;
-
-  @Prop({ required: false })
-  lon: number;
-
-  @Prop({ required: true })
-  device: string;
 
   @Prop()
   browser: string;

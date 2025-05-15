@@ -35,8 +35,10 @@ import { AccountOpenRequest } from './dto/account-open-request.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  /*   @Post('oid-convert')
-  async convertToOid() {
-    return await this.userService.convertToOid();
-  } */
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Get('whoami')
+  async whoami(@User() user: IUser) {
+    return await this.userService.getWhoAmI(user);
+  }
 }

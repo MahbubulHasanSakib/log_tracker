@@ -9,14 +9,6 @@ export class ApiConfigService {
     return this.configService.get('MONGODB_URI');
   }
 
-  get getRedisUri() {
-    return this.configService.get('REDIS_URI');
-  }
-
-  get getAiBaseUrl() {
-    return this.configService.get('AI_BASEURL');
-  }
-
   get getPort() {
     return this.configService.get('PORT');
   }
@@ -55,29 +47,5 @@ export class ApiConfigService {
 
   get getBasePath() {
     return this.configService.get('BASE_PATH');
-  }
-
-  get getEmailHost() {
-    return this.configService.get('EMAIL_HOST');
-  }
-
-  get getEmailUser() {
-    return this.configService.get('EMAIL_USER');
-  }
-
-  get getEmailPassword() {
-    return this.configService.get('EMAIL_PASS');
-  }
-
-  get getSMSAPI() {
-    return this.configService.get('SMS_API');
-  }
-
-  get getSMSUsername() {
-    return this.configService.get('SMS_USERNAME');
-  }
-
-  get getSMSPassword() {
-    return this.configService.get('SMS_PASSWORD');
   }
 }

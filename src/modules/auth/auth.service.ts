@@ -17,21 +17,12 @@ import { CreateUserSignUpDto } from './dto/create-user-signup.dot';
 import { User } from '../user/schemas/user.schema';
 import { ApiConfigService } from 'src/modules/api-config/api-config.service';
 import { JwtService } from '@nestjs/jwt';
-import { CmUser } from '../user/schemas/cm-user.schema';
-import { MsUser } from '../user/schemas/ms-user.schema';
-import { AdminUser } from '../user/schemas/admin-user.schema';
 import { UserType } from '../user/interfaces/user.type';
 import { Request } from 'express';
 import RequestDetails from 'request-details';
 import * as bcrypt from 'bcrypt';
 import * as mongoose from 'mongoose';
 import { IUser } from '../user/interfaces/user.interface';
-import { WmaUser } from '../user/schemas/wma-user.schema';
-import { DffUser } from '../user/schemas/dff-user.schema';
-import { CcUser } from '../user/schemas/cc-user.schema';
-import { MtcmUser } from '../user/schemas/mtcm-user.schema';
-import { AgencyUser } from '../user/schemas/agency-user.schema';
-import { RcUser } from '../user/schemas/rc-user.schema';
 import { LoggedOnType } from '../user/interfaces/loggedOn.type';
 import { UserRole } from './schemas/user-role.schema';
 import { PaginateDto } from 'src/utils/dto/paginate.dto';
@@ -47,15 +38,6 @@ export class AuthService {
     @InjectModel(AuthActivity.name)
     private authActivityModel: Model<AuthActivity>,
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(CmUser.name) private cmUserModel: Model<CmUser>,
-    @InjectModel(MsUser.name) private msUserModel: Model<MsUser>,
-    @InjectModel(WmaUser.name) private wmaUserModel: Model<WmaUser>,
-    @InjectModel(DffUser.name) private dffUserModel: Model<DffUser>,
-    @InjectModel(CcUser.name) private ccUserModel: Model<CcUser>,
-    @InjectModel(MtcmUser.name) private mtcmUserModel: Model<MtcmUser>,
-    @InjectModel(AgencyUser.name) private agencyUserModel: Model<AgencyUser>,
-    @InjectModel(RcUser.name) private rcUserModel: Model<RcUser>,
-    @InjectModel(AdminUser.name) private adminUserModel: Model<AdminUser>,
     @InjectModel(UserRole.name) private userRoleModel: Model<UserRole>,
     private apiConfigService: ApiConfigService,
     private jwtService: JwtService,
@@ -512,264 +494,14 @@ export class AuthService {
 
   // Below are the services related to user sign in, sign up and sign out.
 
-  async userSignUp(createUserSignUpDto: CreateUserSignUpDto) {
-    const user = await this.userModel.findOne({
-      username: createUserSignUpDto.username,
-      kind: createUserSignUpDto.kind,
-    });
-
-    if (user) {
-      throw new ForbiddenException(
-        'A user has already been created for this username. Please try again with a different username.',
-      );
-    }
-
-    const saltRounds = this.apiConfigService.getSaltRounds;
-
-    const hash = await bcrypt.hash(createUserSignUpDto.password, saltRounds);
-
-    let userModel: Model<
-      | CmUser
-      | MsUser
-      | WmaUser
-      | WmaUser
-      | CcUser
-      | MtcmUser
-      | AgencyUser
-      | RcUser
-      | AdminUser
-    >;
-
-    if (createUserSignUpDto.kind === UserType.CM) {
-      userModel = this.cmUserModel;
-    } else if (createUserSignUpDto.kind === UserType.MS) {
-      userModel = this.msUserModel;
-    } else if (createUserSignUpDto.kind === UserType.WMA) {
-      userModel = this.wmaUserModel;
-    } else if (createUserSignUpDto.kind === UserType.CC) {
-      userModel = this.ccUserModel;
-    } else if (createUserSignUpDto.kind === UserType.DFF) {
-      userModel = this.dffUserModel;
-    } else if (createUserSignUpDto.kind === UserType.AGENCY) {
-      userModel = this.agencyUserModel;
-    } else if (createUserSignUpDto.kind === UserType.MTCM) {
-      userModel = this.mtcmUserModel;
-    } else if (createUserSignUpDto.kind === UserType.RC) {
-      userModel = this.rcUserModel;
-    } else {
-      userModel = this.adminUserModel;
-    }
-
-    await userModel.create({
-      ...createUserSignUpDto,
-      password: hash,
-    });
-
-    return { data: null, message: 'User created successfully.' };
-  }
-
   async userSignIn(createUserSignInDto: CreateUserSignInDto, request: Request) {
-    if (!createUserSignInDto.lat || !createUserSignInDto.lon)
-      throw new BadRequestException(
-        'Latitude and Longitude must be provided to login',
-      );
-    const requestDetails = new RequestDetails(request);
-
-    let userModel: Model<
-      | CmUser
-      | MsUser
-      | WmaUser
-      | WmaUser
-      | CcUser
-      | MtcmUser
-      | AgencyUser
-      | RcUser
-      | AdminUser
-    >;
-    let userType: string;
-    let loggedOn = createUserSignInDto.loggedOn;
-    let loggedInAs = createUserSignInDto.userType;
-
-    const users = await this.userModel.find({
+    const user = await this.userModel.findOne({
       username: createUserSignInDto.username,
-      kind:
-        loggedOn === LoggedOnType.WEB
-          ? { $eq: UserType.ADMIN }
-          : { $ne: UserType.ADMIN },
+      deletedAt: null,
     });
-
-    userType = users[0]?.kind;
-    if (loggedInAs && !loggedInAs.split(',').includes(userType))
-      throw new BadRequestException(`User is invalid`);
-
-    if (userType === UserType.CM) {
-      userModel = this.cmUserModel;
-    } else if (userType === UserType.MS) {
-      userModel = this.msUserModel;
-    } else if (userType === UserType.WMA) {
-      userModel = this.wmaUserModel;
-    } else if (userType === UserType.CC) {
-      userModel = this.ccUserModel;
-    } else if (userType === UserType.DFF) {
-      userModel = this.dffUserModel;
-    } else if (userType === UserType.AGENCY) {
-      userModel = this.agencyUserModel;
-    } else if (userType === UserType.MTCM) {
-      userModel = this.mtcmUserModel;
-    } else if (userType === UserType.RC) {
-      userModel = this.rcUserModel;
-    } else {
-      userModel = this.adminUserModel;
-    }
-
-    let pipeline: mongoose.PipelineStage[];
-
-    if (userType === 'Admin') {
-      pipeline = [
-        {
-          $lookup: {
-            from: 'permissions',
-            localField: 'landingPage',
-            foreignField: '_id',
-            pipeline: [
-              {
-                $project: {
-                  _id: 0,
-                  label: { $ifNull: ['$submodule', '$module'] },
-                  value: '$_id',
-                },
-              },
-            ],
-            as: 'landingPage',
-          },
-        },
-        {
-          $unwind: {
-            path: '$landingPage',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $lookup: {
-            from: 'userroles',
-            localField: '_id',
-            foreignField: 'userId',
-            pipeline: [
-              {
-                $lookup: {
-                  from: 'rolehaspermissions',
-                  localField: 'roleId',
-                  foreignField: '_id',
-                  pipeline: [
-                    {
-                      $lookup: {
-                        from: 'permissions',
-                        localField: 'permissions',
-                        foreignField: '_id',
-                        pipeline: [
-                          { $match: { deletedAt: { $eq: null } } },
-                          {
-                            $project: {
-                              _id: 0,
-                              label: { $ifNull: ['$submodule', '$module'] },
-                              value: '$_id',
-                            },
-                          },
-                        ],
-                        as: 'permissions',
-                      },
-                    },
-                  ],
-                  as: 'rolehaspermission',
-                },
-              },
-              {
-                $unwind: {
-                  path: '$rolehaspermission',
-                  preserveNullAndEmptyArrays: true,
-                },
-              },
-            ],
-            as: 'userrole',
-          },
-        },
-        {
-          $unwind: {
-            path: '$userrole',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $addFields: {
-            permission: '$userrole.rolehaspermission.permissions',
-            projectAccess: '$userrole.projectAccess',
-          },
-        },
-        { $project: { userrole: 0 } },
-      ];
-    } else {
-      pipeline = [
-        {
-          $lookup: {
-            from: 'towns',
-            localField: 'town',
-            foreignField: '_id',
-            pipeline: [
-              {
-                $project: {
-                  _id: 0,
-                  id: '$_id',
-                  name: '$name',
-                  towncode: '$towncode',
-                  lat: '$lat',
-                  lon: '$lon',
-                  territory: '$territory',
-                  territoryId: '$territoryId',
-                  area: '$area',
-                  areaId: '$areaId',
-                  region: '$region',
-                  regionId: '$regionId',
-                },
-              },
-            ],
-            as: 'town',
-          },
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'supervisor',
-            foreignField: '_id',
-            pipeline: [{ $project: { _id: 0, id: '$_id', name: '$name' } }],
-            as: 'supervisor',
-          },
-        },
-        {
-          $unwind: {
-            path: '$supervisor',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-      ];
-    }
-
-    const userData = await this.userModel.aggregate([
-      {
-        $match: {
-          username: createUserSignInDto.username,
-          kind: userType,
-          deletedAt: null,
-        },
-      },
-      ...pipeline,
-    ]);
-
-    let user = userData[0];
 
     if (!user) {
-      throw new NotFoundException(
-        'Sorry, no user found for this username and userType.',
-      );
+      throw new NotFoundException('Sorry, no user found for this username.');
     }
 
     const isMatch = await bcrypt.compare(
@@ -797,151 +529,39 @@ export class AuthService {
     }*/
 
     const authActivity = new this.authActivityModel({
-      user: { id: user['_id'], userType: user.kind, name: user.name },
+      user: { id: user['_id'], name: user.name },
       kind: 'Login',
       ip: _ip,
-      lat: createUserSignInDto.lat,
-      lon: createUserSignInDto.lon,
-      device: createUserSignInDto.device?.name ?? platform,
       browser,
       success: false,
       at: new Date(),
     });
 
     if (!isMatch) {
-      let attempt = ++user.attempt;
-
       await authActivity.save();
-
-      if (attempt >= 10) {
-        await userModel.findOneAndUpdate(
-          {
-            username: createUserSignInDto.username,
-            kind: userType,
-          },
-          { $set: { attempt, locked: true } },
-        );
-
-        throw new ForbiddenException(
-          'Your account has been blocked due to multiple incorrect password attempts.',
-        );
-      }
-
-      await userModel.findOneAndUpdate(
-        {
-          username: createUserSignInDto.username,
-          kind: userType,
-        },
-        { $set: { attempt } },
-      );
 
       throw new ForbiddenException('The password you provided is incorrect.');
-    }
-
-    if (user.locked) {
-      await authActivity.save();
-
-      throw new ForbiddenException(
-        'Your account has been blocked due to multiple incorrect password attempts.',
-      );
-    }
-
-    if (user.attempt > 0) {
-      await userModel.findOneAndUpdate(
-        {
-          username: createUserSignInDto.username,
-          kind: userType,
-        },
-        { $set: { attempt: 0 } },
-      );
-    }
-
-    if (userType !== UserType.ADMIN) {
-      const deviceId = createUserSignInDto.device.id;
-
-      if (user.device && user.device.id !== deviceId) {
-        await authActivity.save();
-
-        throw new ForbiddenException(
-          `You have already registered in ${user?.device?.name} device. Please contact with your supervisor`,
-        );
-      }
-
-      if (!user.device) {
-        const device = { ...createUserSignInDto.device };
-
-        await userModel.findOneAndUpdate(
-          {
-            username: createUserSignInDto.username,
-            kind: userType,
-          },
-          { $set: { device } },
-        );
-        user = { ...user, device };
-      }
     }
 
     authActivity.success = true;
 
     await authActivity.save();
 
-    const {
-      _id: sub,
-      password,
-      locked,
-      attempt,
-      modifier,
-      deletedAt,
-      createdAt,
-      updatedAt,
-      ...data
-    } = user;
+    const { _id: sub, username } = user;
 
-    const access_token = await this.jwtService.signAsync({ sub, ...data });
+    const access_token = await this.jwtService.signAsync({ sub, username });
 
     return {
       data: {
         access_token,
-        payload: { id: sub, ...data },
+        payload: { id: sub, username },
         message: 'You have successfully signed in.',
       },
     };
   }
 
   async userSignOut(user: IUser, request: Request) {
-    let userModel: Model<
-      | CmUser
-      | MsUser
-      | WmaUser
-      | DffUser
-      | CcUser
-      | MtcmUser
-      | AgencyUser
-      | RcUser
-      | AdminUser
-    >;
-
-    if (user.kind === UserType.CM) {
-      userModel = this.cmUserModel;
-    } else if (user.kind === UserType.MS) {
-      userModel = this.msUserModel;
-    } else if (user.kind === UserType.WMA) {
-      userModel = this.wmaUserModel;
-    } else if (user.kind === UserType.CC) {
-      userModel = this.ccUserModel;
-    } else if (user.kind === UserType.DFF) {
-      userModel = this.dffUserModel;
-    } else if (user.kind === UserType.AGENCY) {
-      userModel = this.agencyUserModel;
-    } else if (user.kind === UserType.MTCM) {
-      userModel = this.mtcmUserModel;
-    } else if (user.kind === UserType.RC) {
-      userModel = this.rcUserModel;
-    } else {
-      userModel = this.adminUserModel;
-    }
-
-    const found = await userModel.findById(user._id);
+    const found = await this.userModel.findById(user._id);
     const { browser, platform: plat } = getRequestSourceData(request.headers);
     const ip = request.clientIp;
     const _ip = ip.startsWith('::ffff:') ? ip.substring(7) : ip;
@@ -961,81 +581,6 @@ export class AuthService {
     }
     authActivity.success = true;
     await authActivity.save();
-    /*if (found.kind !== UserType.ADMIN) {
-      const employee = <
-        mongoose.HydratedDocument<
-          | CmUser
-          | MsUser
-          | WmaUser
-          | DffUser
-          | CcUser
-          | MtcmUser
-          | AgencyUser
-          | RcUser
-        >
-      >found;
-
-      //employee.device = null;
-
-      await found.save();
-    }*/
     return { data: null, message: 'You have successfully logged out.' };
-  }
-
-  async findAll() {
-    const userRoles = await this.userRoleModel.find({ deletedAt: null });
-
-    return { message: 'Successfully found user roles', data: userRoles };
-  }
-  async findOne(id: string) {
-    const userRole = await this.userRoleModel.aggregate([
-      {
-        $match: {
-          _id: new mongoose.Types.ObjectId(id),
-          deletedAt: null,
-        },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          pipeline: [
-            {
-              $project: {
-                password: false,
-              },
-            },
-          ],
-          as: 'user',
-        },
-      },
-      {
-        $unwind: '$user',
-      },
-    ]);
-
-    return {
-      message: userRole[0]
-        ? 'Successfully found user role'
-        : "didn't find userRole",
-      data: userRole[0],
-    };
-  }
-
-  async unRegisterUserDevice(userId: string, updatedBy: IUser) {
-    const user: any = await this.userModel.findById(userId);
-
-    if (!user)
-      throw new NotFoundException('User not found with the specific id');
-
-    user.device = null;
-    user.modifier = updatedBy._id;
-    await user.save();
-
-    return {
-      data: user,
-      message: 'Device unregistered successfully',
-    };
   }
 }

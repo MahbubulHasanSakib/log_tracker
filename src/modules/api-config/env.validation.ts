@@ -5,12 +5,6 @@ class EnvironmentVariables {
   @IsString()
   MONGODB_URI: string;
 
-  @IsString()
-  REDIS_URI: string;
-
-  @IsString()
-  AI_BASEURL: string;
-
   @IsNumber()
   PORT: number;
 

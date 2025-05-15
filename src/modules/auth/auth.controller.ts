@@ -122,11 +122,6 @@ export class AuthController {
 
   // Below are the endpoints related to user sign in, sign up and sign out.
 
-  @Post('signup')
-  userSignUp(@Body() createUserSignUpDto: CreateUserSignUpDto) {
-    return this.authService.userSignUp(createUserSignUpDto);
-  }
-
   @Post('signin')
   @HttpCode(HttpStatus.OK)
   userSignIn(
@@ -142,25 +137,5 @@ export class AuthController {
   @UseGuards(AuthGuard)
   userSignOut(@User() user: IUser, @Req() request: Request) {
     return this.authService.userSignOut(user, request);
-  }
-
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
-  @Patch('unregister-user-device/:userId')
-  async unRegisterUserDevice(
-    @Param('userId') userId: string,
-    @User() user: IUser,
-  ) {
-    return await this.authService.unRegisterUserDevice(userId, user);
-  }
-
-  @Get('user-role')
-  findAllUserRole() {
-    return this.authService.findAll();
-  }
-
-  @Get('user-role/:id')
-  findOneUserRole(@Param('id') id: string) {
-    return this.authService.findOne(id);
   }
 }

@@ -4,10 +4,18 @@ import { AppService } from './app.service';
 import { ApiConfigModule } from './modules/api-config/api-config.module';
 import { ApiConfigService } from './modules/api-config/api-config.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UploadModule } from './modules/upload/upload.module';
+import { CoreModule } from './modules/core/core.module';
 
 @Module({
   imports: [
     ApiConfigModule,
+    UserModule,
+    AuthModule,
+    UploadModule,
+    CoreModule,
     MongooseModule.forRootAsync({
       imports: [ApiConfigModule],
       useFactory: async (apiConfigService: ApiConfigService) => ({
