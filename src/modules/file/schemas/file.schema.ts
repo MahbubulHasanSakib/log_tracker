@@ -20,6 +20,9 @@ export class File {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   uploadedBy: mongoose.Schema.Types.ObjectId;
+
+  @Prop({ required: false })
+  uploadedByUser: string;
 }
 
 export const FileSchema = SchemaFactory.createForClass(File);

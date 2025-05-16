@@ -39,6 +39,16 @@ export class FileController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
+  @Get('all-files/:folderId')
+  async getFilesByFolderId(
+    @Param('folderId') folderId: string,
+    @User() user: IUser,
+  ) {
+    return this.fileService.getFilesByFolderId(folderId, user);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get('download/:id')
   async downloadFile(@Param('id') id: string, @User() user: IUser) {
     return this.fileService.downloadFile(id, user);

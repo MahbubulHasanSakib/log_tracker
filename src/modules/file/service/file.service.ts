@@ -33,6 +33,7 @@ export class FileService {
       folder: existing.name,
       folderId: existing._id,
       uploadedBy: user._id,
+      uploadedByUser: user.name,
     });
 
     await this.logActivityModel.create({
@@ -62,5 +63,10 @@ export class FileService {
       fileName: file.name,
     });
     return { data: file.url };
+  }
+
+  async getFilesByFolderId(folderId: string, user: IUser) {
+    let files = await this.fileModel.find({ folderId });
+    return { data: files };
   }
 }
