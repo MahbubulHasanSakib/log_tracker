@@ -27,7 +27,7 @@ import { LoggedOnType } from '../user/interfaces/loggedOn.type';
 import { UserRole } from './schemas/user-role.schema';
 import { PaginateDto } from 'src/utils/dto/paginate.dto';
 import { ObjectId } from 'mongodb';
-import { AuthActivity } from '../auth-activity/schemas/auth-activity.schema';
+import { LogActivity } from '../log-activity/schemas/log-activity.schema';
 import { getRequestSourceData } from 'src/utils/request.helper';
 @Injectable()
 export class AuthService {
@@ -35,8 +35,8 @@ export class AuthService {
     @InjectModel(Permission.name) private permissionModel: Model<Permission>,
     @InjectModel(RoleHasPermission.name)
     private roleHasPermissionModel: Model<RoleHasPermission>,
-    @InjectModel(AuthActivity.name)
-    private authActivityModel: Model<AuthActivity>,
+    @InjectModel(LogActivity.name)
+    private logActivityModel: Model<LogActivity>,
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(UserRole.name) private userRoleModel: Model<UserRole>,
     private apiConfigService: ApiConfigService,
@@ -528,13 +528,13 @@ export class AuthService {
       browser = `${requestBrowser.name}/${requestBrowser.version}`;
     }*/
 
-    const authActivity = new this.authActivityModel({
+    const authActivity = new this.logActivityModel({
       user: { id: user['_id'], name: user.name },
-      kind: 'Login',
+      kind: 'login',
       ip: _ip,
+      device: createUserSignInDto.device?.name ?? platform,
       browser,
       success: false,
-      at: new Date(),
     });
 
     if (!isMatch) {
@@ -567,14 +567,13 @@ export class AuthService {
     const _ip = ip.startsWith('::ffff:') ? ip.substring(7) : ip;
     const platform = plat.replaceAll('"', '');
 
-    const authActivity = await this.authActivityModel.create({
-      user: { id: user['_id'], userType: user.kind, name: user.name },
-      kind: 'Logout',
-      ip: _ip,
+    const authActivity = await this.logActivityModel.create({
+      user: { id: user['_id'], name: user.name },
+      kind: 'logout',
       device: user.device?.name ?? platform,
       browser,
+      ip: _ip,
       success: false,
-      at: new Date(),
     });
     if (!found) {
       throw new ForbiddenException('You are not able to log out.');

@@ -8,6 +8,8 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { CoreModule } from './modules/core/core.module';
+import { FileModule } from './modules/file/file.module';
+import { FolderModule } from './modules/folder/folder.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { CoreModule } from './modules/core/core.module';
     AuthModule,
     UploadModule,
     CoreModule,
+    FolderModule,
+    FileModule,
     MongooseModule.forRootAsync({
       imports: [ApiConfigModule],
       useFactory: async (apiConfigService: ApiConfigService) => ({

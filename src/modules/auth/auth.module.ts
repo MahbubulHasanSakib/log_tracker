@@ -10,9 +10,9 @@ import {
 import { UserModule } from '../user/user.module';
 import { UserRole, UserRoleSchema } from './schemas/user-role.schema';
 import {
-  AuthActivity,
-  AuthActivitySchema,
-} from '../auth-activity/schemas/auth-activity.schema';
+  LogActivity,
+  LogActivitySchema,
+} from '../log-activity/schemas/log-activity.schema';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import {
       { name: Permission.name, schema: PermissionSchema },
       { name: RoleHasPermission.name, schema: RoleHasPermissionSchema },
       { name: UserRole.name, schema: UserRoleSchema },
-      { name: AuthActivity.name, schema: AuthActivitySchema },
+      { name: LogActivity.name, schema: LogActivitySchema },
     ]),
   ],
   controllers: [AuthController],
