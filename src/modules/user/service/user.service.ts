@@ -49,7 +49,14 @@ export class UserService {
           password: false,
         },
       },
-
+      {
+        $lookup: {
+          from: 'folders',
+          localField: 'folderAccess',
+          foreignField: '_id',
+          as: 'folderAccess',
+        },
+      },
       {
         $project: {
           password: 0,

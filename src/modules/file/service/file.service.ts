@@ -66,7 +66,29 @@ export class FileService {
   }
 
   async getFilesByFolderId(folderId: string, user: IUser) {
-    let files = await this.fileModel.find({ folderId });
+    let files = await this.fileModel.find({ folderId, deletedAt: null });
     return { data: files };
+  }
+
+  async deleteFile(id: string, user: IUser) {
+    const file = await this.fileModel.findOne({ _id: id, deletedAt: null });
+    if (!file) throw new NotFoundException('File not found');
+
+    await this.fileModel.findByIdAndUpdate(id, {
+      deletedAt: new Date(),
+      deletedBy: user._id,
+    });
+
+    await this.logActivityModel.create({
+      user: {
+        id: user._id,
+        name: user.name,
+      },
+      kind: 'delete',
+      fileName: file.name,
+      fileId: file._id,
+    });
+
+    return { message: 'File deleted' };
   }
 }

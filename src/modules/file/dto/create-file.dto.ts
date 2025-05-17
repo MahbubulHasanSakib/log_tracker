@@ -24,7 +24,7 @@ export class CreateFileDto {
     description:
       'The full public URL of the file stored in DigitalOcean Spaces',
   })
-  @IsUrl()
+  @IsString()
   @IsNotEmpty()
   url: string;
 }

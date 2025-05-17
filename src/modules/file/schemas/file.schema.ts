@@ -23,6 +23,12 @@ export class File {
 
   @Prop({ required: false })
   uploadedByUser: string;
+
+  @Prop({ default: null })
+  deletedAt: Date;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  deletedBy: mongoose.Schema.Types.ObjectId;
 }
 
 export const FileSchema = SchemaFactory.createForClass(File);

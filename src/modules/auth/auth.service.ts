@@ -495,10 +495,24 @@ export class AuthService {
   // Below are the services related to user sign in, sign up and sign out.
 
   async userSignIn(createUserSignInDto: CreateUserSignInDto, request: Request) {
-    const user = await this.userModel.findOne({
-      username: createUserSignInDto.username,
-      deletedAt: null,
-    });
+    const userData = await this.userModel.aggregate([
+      {
+        $match: {
+          username: createUserSignInDto.username,
+          deletedAt: null,
+        },
+      },
+      {
+        $lookup: {
+          from: 'folders',
+          localField: 'folderAccess',
+          foreignField: '_id',
+          as: 'folderAccess',
+        },
+      },
+    ]);
+
+    let user = userData[0];
 
     if (!user) {
       throw new NotFoundException('Sorry, no user found for this username.');
@@ -547,14 +561,18 @@ export class AuthService {
 
     await authActivity.save();
 
-    const { _id: sub, username } = user;
+    const { _id: sub, username, folderAccess } = user;
 
-    const access_token = await this.jwtService.signAsync({ sub, username });
+    const access_token = await this.jwtService.signAsync({
+      sub,
+      username,
+      folderAccess,
+    });
 
     return {
       data: {
         access_token,
-        payload: { id: sub, username },
+        payload: { id: sub, username, folderAccess },
         message: 'You have successfully signed in.',
       },
     };

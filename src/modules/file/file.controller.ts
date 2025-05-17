@@ -28,6 +28,13 @@ export class FileController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
+  @Delete(':id')
+  async deleteFile(@Param('id') id: string, @User() user: IUser) {
+    return this.fileService.deleteFile(id, user);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Post('manual-upload-file/:folderId')
   async manualUploadFile(
     @Param('folderId') folderId: string,
