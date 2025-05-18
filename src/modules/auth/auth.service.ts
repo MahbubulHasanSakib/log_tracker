@@ -561,18 +561,19 @@ export class AuthService {
 
     await authActivity.save();
 
-    const { _id: sub, username, folderAccess } = user;
+    const { _id: sub, username, name, folderAccess } = user;
 
     const access_token = await this.jwtService.signAsync({
       sub,
       username,
+      name,
       folderAccess,
     });
 
     return {
       data: {
         access_token,
-        payload: { id: sub, username, folderAccess },
+        payload: { id: sub, username, name, folderAccess },
         message: 'You have successfully signed in.',
       },
     };
