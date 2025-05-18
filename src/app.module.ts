@@ -10,6 +10,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { CoreModule } from './modules/core/core.module';
 import { FileModule } from './modules/file/file.module';
 import { FolderModule } from './modules/folder/folder.module';
+import { LogActivityModule } from './modules/log-activity/log-activity.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { FolderModule } from './modules/folder/folder.module';
     CoreModule,
     FolderModule,
     FileModule,
+    LogActivityModule,
     MongooseModule.forRootAsync({
       imports: [ApiConfigModule],
       useFactory: async (apiConfigService: ApiConfigService) => ({

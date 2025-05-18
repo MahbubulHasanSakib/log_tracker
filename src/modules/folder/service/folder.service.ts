@@ -33,4 +33,9 @@ export class FolderService {
     });
     return { data: folderCreated };
   }
+
+  async getAllFolders(user: IUser) {
+    const folders = await this.folderModel.find({ deletedAt: null });
+    return { data: folders };
+  }
 }

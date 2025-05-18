@@ -15,4 +15,4 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [LogActivityController],
   providers: [LogActivityService],
 })
-export class AuthActivityModule {}
+export class LogActivityModule {}

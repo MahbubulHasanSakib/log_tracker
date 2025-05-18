@@ -33,4 +33,11 @@ export class FolderController {
   async createFolder(@Body() body: CreateFolderDto, @User() user: IUser) {
     return this.folderService.create(body, user);
   }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Get('')
+  async getAllFolders(@User() user: IUser) {
+    return this.folderService.getAllFolders(user);
+  }
 }
