@@ -7,6 +7,7 @@ import {
   Req,
   Inject,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
@@ -64,12 +65,12 @@ export class UploadController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 100000000 }),
-          new FileTypeValidator({
+          /*new FileTypeValidator({
             fileType: new RegExp(
-              '(PNG|JPEG|JPG|PDF|MP4|DOC|DOCX|XLS|XLSX|CSV)',
+              '(PNG|JPEG|JPG|PDF|MP4|DOC|DOCX|XLS|XLSX)',
               'i',
             ),
-          }),
+          }),*/
         ],
       }),
     )
@@ -83,6 +84,15 @@ export class UploadController {
     const token = authHeader.startsWith('Bearer ')
       ? authHeader.slice(7)
       : 'No Token Provided';
+
+    if (
+      file.mimetype !== 'text/csv' &&
+      !/^(image\/(png|jpeg)|application\/pdf|video\/mp4|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|application\/vnd\.openxmlformats-officedocument\.presentationml\.presentation)$/i.test(
+        file.mimetype,
+      )
+    ) {
+      throw new BadRequestException(`Unsupported file type: ${file.mimetype}`);
+    }
 
     const bucket = this.apiConfigService.getBucket;
     const basePath = this.apiConfigService.getBasePath;
