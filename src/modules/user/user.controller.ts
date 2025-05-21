@@ -41,4 +41,15 @@ export class UserController {
   async whoami(@User() user: IUser) {
     return await this.userService.getWhoAmI(user);
   }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @User() user: IUser,
+  ) {
+    return this.userService.update(id, updateUserDto, user);
+  }
 }

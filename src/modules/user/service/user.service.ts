@@ -68,4 +68,30 @@ export class UserService {
     ]);
     return { data: userData[0] };
   }
+
+  async update(id: string, updateUserDto: UpdateUserDto, loggedUser: IUser) {
+    const user = await this.userModel.findById(id);
+
+    if (!user) throw new NotFoundException('No user found for this id.');
+
+    if (updateUserDto.password) {
+      const saltRounds = this.apiConfigService.getSaltRounds;
+      updateUserDto.password = await bcrypt.hash(
+        updateUserDto.password,
+        saltRounds,
+      );
+    }
+
+    const updated = await this.userModel.findByIdAndUpdate(
+      id,
+      { ...updateUserDto, modifier: loggedUser._id },
+      {
+        new: true,
+      },
+    );
+
+    if (!updated) throw new NotFoundException('Error updating user.');
+
+    return { data: updated, message: 'User updated successfully' };
+  }
 }

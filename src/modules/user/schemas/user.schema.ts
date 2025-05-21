@@ -15,6 +15,9 @@ export class User {
   @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId] })
   folderAccess: mongoose.Schema.Types.ObjectId[];
 
+  @Prop({ default: null, type: mongoose.Schema.Types.ObjectId })
+  modifier: mongoose.Schema.Types.ObjectId;
+
   @Prop({ default: null })
   deletedAt: Date;
 }

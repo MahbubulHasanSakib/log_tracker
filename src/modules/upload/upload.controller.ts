@@ -64,7 +64,7 @@ export class UploadController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 100000000 }),
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 1024 }),
           /*new FileTypeValidator({
             fileType: new RegExp(
               '(PNG|JPEG|JPG|PDF|MP4|DOC|DOCX|XLS|XLSX)',
